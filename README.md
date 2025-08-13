@@ -1,2 +1,4 @@
 # PyPortScan
-A lightweight port scanner built with pyton
+A lightweight port scanner built with sockets and scapy
+
+Use -h arg for commands
