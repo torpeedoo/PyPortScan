@@ -10,8 +10,8 @@ class Scanner:
         if not self.ip:
             raise ValueError(f"Could not resolve {ip}")
 
-    def wait_random_delay(self):
-        delay = random.uniform(0.1, 3.0)
+    def wait_random_delay(self, max_delay=1.0):
+        delay = random.uniform(0.1, max_delay)
         time.sleep(delay)
         print(f"Waiting for {delay:.2f} seconds before next scan...")
 
@@ -38,18 +38,22 @@ class Scanner:
             print(f"Socket error: {e}")
             return False
 
-    def scan_ports_range(self, start_port, end_port):
+    def scan_ports_range(self, start_port, end_port, delay=False, max_delay=1.0):
         open_ports = []
         for port in range(start_port, end_port + 1):
             if self.scan_port(port):
                 open_ports.append(port)
+
+            if delay: self.wait_random_delay(max_delay)
         return open_ports if open_ports else None
 
-    def scan_ports_list(self, port_list):
+    def scan_ports_list(self, port_list, delay=False, max_delay=1.0):
         open_ports = []
         for port in port_list:
             if self.scan_port(port):
                 open_ports.append(port)
+
+            if delay: self.wait_random_delay(max_delay)
         return open_ports if open_ports else None
 
     def stealth_scan_port(self, port):
@@ -69,18 +73,20 @@ class Scanner:
         print(result)
         return "open" in result
 
-    def stealth_scan_ports_range(self, start_port, end_port):
+    def stealth_scan_ports_range(self, start_port, end_port, delay=False, max_delay=1.0):
         open_ports = []
         for port in range(start_port, end_port + 1):
             if self.stealth_scan_port(port):
                 open_ports.append(port)
-            self.wait_random_delay()
+            
+            if delay: self.wait_random_delay(max_delay)
         return open_ports if open_ports else None
 
-    def stealth_scan_ports_list(self, port_list):
+    def stealth_scan_ports_list(self, port_list, delay=False, max_delay=1.0):
         open_ports = []
         for port in port_list:
             if self.stealth_scan_port(port):
                 open_ports.append(port)
-            self.wait_random_delay()
+            
+            if delay: self.wait_random_delay(max_delay)
         return open_ports if open_ports else None
