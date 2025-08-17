@@ -1,5 +1,7 @@
 import socket
 from scapy.all import IP, TCP, sr1
+import random
+import time
 
 class Scanner:
     def __init__(self, ip, timeout=0.1):
@@ -7,6 +9,12 @@ class Scanner:
         self.ip = self.resolve_ip(ip)
         if not self.ip:
             raise ValueError(f"Could not resolve {ip}")
+
+    def wait_random_delay(self):
+        delay = random.uniform(0.1, 3.0)
+        time.sleep(delay)
+        print(f"Waiting for {delay:.2f} seconds before next scan...")
+
 
     def resolve_ip(self, ip):
         try:
@@ -66,6 +74,7 @@ class Scanner:
         for port in range(start_port, end_port + 1):
             if self.stealth_scan_port(port):
                 open_ports.append(port)
+            self.wait_random_delay()
         return open_ports if open_ports else None
 
     def stealth_scan_ports_list(self, port_list):
@@ -73,4 +82,5 @@ class Scanner:
         for port in port_list:
             if self.stealth_scan_port(port):
                 open_ports.append(port)
+            self.wait_random_delay()
         return open_ports if open_ports else None
