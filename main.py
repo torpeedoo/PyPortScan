@@ -32,11 +32,18 @@ def main():
     list_parser.add_argument('--rand_delay', action='store_true', help='Enable random delay between scans')
     list_parser.add_argument('--max_delay', type=float, nargs='?', default=1.0, help='Maximum delay between scans (default: 1.0 seconds)')
 
+    # Local host discovery
+    local_parser = subparsers.add_parser('local', help='Local host discovery')
+    local_parser.add_argument('ports', help='Comma-separated list of ports to scan')
+    local_parser.add_argument('--delay', action='store_true', help='Enable delay between scans')
+    local_parser.add_argument('--max_delay', type=float, nargs='?', default=1.0, help='Maximum delay between scans (default: 1.0 seconds)')
+
+
     args = parser.parse_args()
 
 
     start_time = time.time()
-    print(f"\nStarting scan on {args.ip}...\n")
+    print("\nStarting scan...\n")
 
     if args.mode == 'single' and args.stealth:
         scanner1 = Scanner(args.ip)
@@ -50,6 +57,17 @@ def main():
         if result:
             print(result)
 
+    elif args.mode == 'local':
+        scanner1 = Scanner(localhost)
+        port_list = [int(p.strip()) for p in args.ports.split(',')]
+        hosts_up = scanner1.local_host_discovery(ports_list=port_list, delay=args.delay, max_delay=args.max_delay)
+        
+        if hosts_up:
+            print("\nHosts found:")
+            for host, ports in hosts_up.items():
+                print(f"{host}: {ports}")
+        else:
+            print("No hosts found.")
 
     elif args.mode == 'range' and args.stealth:
         

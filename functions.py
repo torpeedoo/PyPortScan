@@ -10,11 +10,24 @@ class Scanner:
         if not self.ip:
             raise ValueError(f"Could not resolve {ip}")
 
+    def get_local_subnet(self):
+        s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+        try:
+            # Doesn't have to be reachable
+            s.connect(('8.8.8.8', 80))
+            local_ip = s.getsockname()[0]
+        except Exception:
+            local_ip = '127.0.0.1'
+        finally:
+            s.close()
+        # Extract subnet (first three octets)
+        subnet = '.'.join(local_ip.split('.')[:3])
+        return subnet
+
     def wait_random_delay(self, max_delay=1.0):
         delay = random.uniform(0.1, max_delay)
         time.sleep(delay)
         print(f"Waiting for {delay:.2f} seconds before next scan...")
-
 
     def resolve_ip(self, ip):
         try:
@@ -25,6 +38,28 @@ class Scanner:
                 return socket.gethostbyname(ip)  # resolve hostname
             except socket.gaierror:
                 return None
+            
+    def local_host_discovery(self, ports_list, delay=False, max_delay=1.0):
+        hosts_up = {}
+        
+        subnet = self.get_local_subnet()
+        print(f"Local subnet detected: {subnet}.0/24")
+
+        for ip in range(1, 255):
+            host = f"{subnet}.{ip}"
+            self.ip = host  # Update the scanner's IP for each host
+            print(f"Scanning {host}...")
+            try:
+                ports = self.scan_ports_list(ports_list, delay, max_delay)
+                #print(f"{host} is reachable!")
+                if ports: hosts_up[host] = ports
+            except Exception as e:
+                print(e)
+            
+            if delay:
+                self.wait_random_delay(max_delay)
+
+        return hosts_up if hosts_up else None
 
     def scan_port(self, port):
         try:
